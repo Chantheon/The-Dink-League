@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Dink League</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#111827;--muted:#6b7280;--accent:#16a34a;--accent2:#0f766e;--line:#e5e7eb;--danger:#dc2626}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;background:var(--bg);color:var(--text);padding-bottom:82px}
+header{background:#111827;color:#fff;padding:22px 18px 18px;position:sticky;top:0;z-index:5}
+.brand{font-size:28px;font-weight:800;letter-spacing:-.8px}.subtitle{font-size:13px;color:#cbd5e1;margin-top:3px}
+main{max-width:760px;margin:auto;padding:18px}.page{display:none}.page.active{display:block}
+h1{font-size:26px;margin:4px 0 16px}h2{font-size:19px;margin:0 0 12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px #00000008}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.stat{padding:14px;border-radius:14px;background:#f0fdf4}.stat b{display:block;font-size:25px}.stat span{font-size:12px;color:var(--muted)}
+button,.btn{border:0;border-radius:12px;padding:12px 15px;background:var(--accent);color:white;font-weight:700;font-size:14px;cursor:pointer}
+button.secondary{background:#e5e7eb;color:#111827}button.danger{background:var(--danger)}button.full{width:100%;margin-top:10px}
+input,select{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:11px;font-size:15px;background:#fff;margin:5px 0 10px}
+label{font-size:12px;font-weight:700;color:#4b5563}
+.row{display:flex;gap:8px;align-items:center;justify-content:space-between}.row+.row{margin-top:10px}
+.item{padding:12px 0;border-bottom:1px solid var(--line)}.item:last-child{border-bottom:0}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#dcfce7;color:#166534;font-size:11px;font-weight:800}
+.muted{color:var(--muted);font-size:13px}.small{font-size:12px}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:8px 4px calc(8px + env(safe-area-inset-bottom));z-index:10}
+nav button{background:none;color:#6b7280;padding:7px 9px;font-size:11px}.navicon{display:block;font-size:20px;margin-bottom:2px}nav button.active{color:#16a34a}
+.score{font-size:20px;font-weight:800}.win{color:#15803d}.loss{color:#b91c1c}
+.empty{padding:22px;text-align:center;color:var(--muted)}
+</style>
+</head>
+<body>
+<header><div class="brand">🏓 Dink League</div><div class="subtitle">League management made simple</div></header>
+
+<main>
+<section id="home" class="page active">
+<h1>Dashboard</h1>
+<div class="grid">
+<div class="stat"><b id="playerCount">0</b><span>Players</span></div>
+<div class="stat"><b id="matchCount">0</b><span>Matches</span></div>
+</div>
+<div class="card">
+<h2>My League</h2>
+<div class="row"><div><b id="leagueName">Dink League</b><div class="muted" id="leagueMeta">Create your first league</div></div><span class="badge">ACTIVE</span></div>
+</div>
+<div class="card">
+<h2>Quick Actions</h2>
+<div class="grid">
+<button onclick="showPage('players')">+ Player</button>
+<button onclick="showPage('schedule')">Schedule</button>
+<button onclick="showPage('rankings')">Rankings</button>
+<button onclick="showPage('league')">League Setup</button>
+</div>
+</div>
+</section>
+
+<section id="league" class="page">
+<h1>League Setup</h1>
+<div class="card">
+<label>League name</label><input id="leagueInput" placeholder="Dink League">
+<label>Season</label><input id="seasonInput" placeholder="Fall 2026">
+<label>Games per matchup</label><select id="gamesInput"><option>1</option><option>2</option><option>3</option></select>
+<button class="full" onclick="saveLeague()">Save League</button>
+</div>
+<div class="card"><h2>How it works</h2><p class="muted">Add players, create matchups, record scores, and the rankings update automatically on this device.</p></div>
+</section>
+
+<section id="players" class="page">
+<h1>Players</h1>
+<div class="card">
+<label>Player name</label><input id="playerInput" placeholder="e.g. Tony Chan">
+<button class="full" onclick="addPlayer()">Add Player</button>
+</div>
+<div class="card" id="playersList"></div>
+</section>
+
+<section id="schedule" class="page">
+<h1>Schedule</h1>
+<div class="card">
+<label>Player 1</label><select id="p1"></select>
+<label>Player 2</label><select id="p2"></select>
+<label>Date</label><input id="matchDate" type="date">
+<button class="full" onclick="addMatch()">Create Match</button>
+</div>
+<div class="card" id="scheduleList"></div>
+</section>
+
+<section id="rankings" class="page">
+<h1>Rankings</h1>
+<div class="card" id="rankingList"></div>
+</section>
+</main>
+
+<nav>
+<button onclick="showPage('home')" data-page="home" class="active"><span class="navicon">🏠</span>Home</button>
+<button onclick="showPage('players')" data-page="players"><span class="navicon">👥</span>Players</button>
+<button onclick="showPage('schedule')" data-page="schedule"><span class="navicon">📅</span>Schedule</button>
+<button onclick="showPage('rankings')" data-page="rankings"><span class="navicon">🏆</span>Rankings</button>
+</nav>
+
+<script>
+const KEY="dinkLeagueData";
+let data=JSON.parse(localStorage.getItem(KEY)||'null')||{league:{name:"Dink League",season:"2026",games:1},players:[],matches:[]};
+function save(){localStorage.setItem(KEY,JSON.stringify(data));render();}
+function showPage(id){
+ document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("active",x.dataset.page===id));
+ render();
+}
+function saveLeague(){
+ data.league={name:document.getElementById("leagueInput").value||"Dink League",season:document.getElementById("seasonInput").value||"2026",games:+document.getElementById("gamesInput").value};
+ save(); showPage("home");
+}
+function addPlayer(){
+ let n=document.getElementById("playerInput").value.trim(); if(!n)return;
+ data.players.push({id:Date.now(),name:n}); document.getElementById("playerInput").value=""; save();
+}
+function removePlayer(id){data.players=data.players.filter(p=>p.id!==id);data.matches=data.matches.filter(m=>m.a!==id&&m.b!==id);save();}
+function addMatch(){
+ let a=+document.getElementById("p1").value,b=+document.getElementById("p2").value;
+ if(!a||!b||a===b)return alert("Choose two different players.");
+ data.matches.push({id:Date.now(),a,b,date:document.getElementById("matchDate").value||new Date().toISOString().slice(0,10),sa:null,sb:null});
+ save();
+}
+function recordScore(id,side){
+ let m=data.matches.find(x=>x.id===id), val=prompt("Enter score (0-99):");
+ if(val===null||isNaN(+val))return;
+ if(side==="a")m.sa=+val;else m.sb=+val;save();
+}
+function deleteMatch(id){data.matches=data.matches.filter(m=>m.id!==id);save();}
+function rankings(){
+ return data.players.map(p=>{let w=0,l=0,pf=0,pa=0;
+ data.matches.forEach(m=>{if(m.sa===null||m.sb===null)return;
+ if(m.a===p.id){pf+=m.sa;pa+=m.sb;m.sa>m.sb?w++:l++}
+ if(m.b===p.id){pf+=m.sb;pa+=m.sa;m.sb>m.sa?w++:l++}});
+ return {...p,w,l,pf,pa,pct:w+l?w/(w+l):0}
+ }).sort((a,b)=>b.w-a.w||(b.pf-b.pa)-(a.pf-a.pa));
+}
+function render(){
+ document.getElementById("playerCount").textContent=data.players.length;
+ document.getElementById("matchCount").textContent=data.matches.length;
+ document.getElementById("leagueName").textContent=data.league.name;
+ document.getElementById("leagueMeta").textContent=data.league.season+" • "+data.players.length+" players";
+ document.getElementById("leagueInput").value=data.league.name;
+ document.getElementById("seasonInput").value=data.league.season;
+ document.getElementById("gamesInput").value=data.league.games;
+ document.getElementById("playersList").innerHTML=data.players.length?data.players.map(p=>`<div class="item row"><span><b>${esc(p.name)}</b></span><button class="danger" onclick="removePlayer(${p.id})">Remove</button></div>`).join(""):'<div class="empty">No players yet.</div>';
+ let opts='<option value="">Select player</option>'+data.players.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("");
+ document.getElementById("p1").innerHTML=opts;document.getElementById("p2").innerHTML=opts;
+ document.getElementById("scheduleList").innerHTML=data.matches.length?data.matches.slice().reverse().map(m=>{
+  let a=name(m.a),b=name(m.b),done=m.sa!==null&&m.sb!==null;
+  return `<div class="item"><div class="row"><div><b>${esc(a)}</b> vs <b>${esc(b)}</b><div class="muted">${m.date}</div></div><span class="score">${done?m.sa+" - "+m.sb:"—"}</span></div>
+  <div style="margin-top:9px;display:flex;gap:7px"><button onclick="recordScore(${m.id},'a')">Score P1</button><button onclick="recordScore(${m.id},'b')">Score P2</button><button class="danger" onclick="deleteMatch(${m.id})">×</button></div></div>`
+ }).join(""):'<div class="empty">No matches scheduled.</div>';
+ let r=rankings();
+ document.getElementById("rankingList").innerHTML=r.length?r.map((p,i)=>`<div class="item row"><div><b>#${i+1} ${esc(p.name)}</b><div class="muted">${p.w} W • ${p.l} L • ${p.pf-p.pa>=0?"+":""}${p.pf-p.pa} point diff</div></div><b>${(p.pct*100).toFixed(0)}%</b></div>`).join(""):'<div class="empty">Add players to see rankings.</div>';
+}
+function name(id){let p=data.players.find(x=>x.id===id);return p?p.name:"Unknown";}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));}
+render();
+if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
+</script>
+</body></html>
